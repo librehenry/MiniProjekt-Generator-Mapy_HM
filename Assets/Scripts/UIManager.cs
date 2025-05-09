@@ -10,6 +10,11 @@ public class UIManager : MonoBehaviour
     public Button cancelButton;
     public Slider progressBar;
     public TextMeshProUGUI logText;
+    public Slider obstacleSlider;
+    public TextMeshProUGUI obstacleLabel;
+    public Slider resourceSlider;
+    public TextMeshProUGUI resourceLabel;
+
 
     public MapManager mapManager;
 
@@ -17,16 +22,36 @@ public class UIManager : MonoBehaviour
     {
         generateButton.onClick.AddListener(OnGenerateClicked);
         cancelButton.onClick.AddListener(OnCancelClicked);
+
+        obstacleSlider.onValueChanged.AddListener(value => obstacleLabel.text = $"Przeszkody: {value:F0}%");
+        resourceSlider.onValueChanged.AddListener(value => resourceLabel.text = $"Zasoby: {value:F0}%");
+
+        // Ustaw domy?lne etykiety
+        obstacleLabel.text = $"Przeszkody: {obstacleSlider.value:F0}%";
+        resourceLabel.text = $"Zasoby: {resourceSlider.value:F0}%";
     }
 
     private void OnGenerateClicked()
     {
         int.TryParse(widthInput.text, out int width);
         int.TryParse(heightInput.text, out int height);
+        
+        if (width <= 0 || height <= 0)
+        {
+            LogMessage("Nieprawid?owe wymiary mapy.");
+            return;
+        }
 
         mapManager.width = width;
         mapManager.height = height;
-        mapManager.StartGeneration(this);
+
+        float obstaclePercent = obstacleSlider.value / 100f;
+        float resourcePercent = resourceSlider.value / 100f;
+
+        progressBar.value = 0;
+        logText.text = "";
+
+        mapManager.StartGeneration(this, obstaclePercent, resourcePercent);
     }
 
     private void OnCancelClicked()
@@ -43,11 +68,4 @@ public class UIManager : MonoBehaviour
     {
         logText.text += msg + "\n";
     }
-    /*
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    */
 }

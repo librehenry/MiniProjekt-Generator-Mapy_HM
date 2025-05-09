@@ -14,7 +14,15 @@ public class MapManager : MonoBehaviour
     private MapTile[,] map;
     private CancellationTokenSource cts;
 
-    public async Task GenerateMapAsync(int width, int height, Action<float> onProgress, Action<string> onLog, CancellationToken token)
+    public async Task GenerateMapAsync(
+        int width, 
+        int height, 
+        float obstaclePercent, 
+        float resourcePercent,
+        Action<float> onProgress, 
+        Action<string> onLog, 
+        CancellationToken token
+        )
     {
         map = new MapTile[width, height];
 
@@ -33,16 +41,30 @@ public class MapManager : MonoBehaviour
         }
 
         System.Random rand = new();
-        int obstacleCount = (int)(width * height * 0.1f);
-        int resourceCount = (int)(width * height * 0.02f);
+        int totalTiles = width * height;
 
-        await PlaceRandomTiles(TileType.Obstacle, obstacleCount, rand, token);
-        await PlaceRandomTiles(TileType.Resource, resourceCount, rand, token);
+        int obstacleCount = Mathf.RoundToInt(totalTiles * obstaclePercent); //(int)(width * height * 0.1f);
+        int resourceCount = Mathf.RoundToInt(totalTiles * resourcePercent); //(int)(width * height * 0.02f);
 
+        onLog?.Invoke("Generuj? przeszkody...");
+        await PlaceRandomTiles(TileType.Obstacle, obstacleCount, rand, token, onLog);
+
+        onLog?.Invoke("Generuj? zasoby...");
+        await PlaceRandomTiles(TileType.Resource, resourceCount, rand, token, onLog);
+
+        onLog?.Invoke("Renderuj? map?...");
         RenderMap();
+
+        onLog?.Invoke("Generowanie zako?czone.");
     }
 
-    private async Task PlaceRandomTiles(TileType type, int count, System.Random rand, CancellationToken token)
+    private async Task PlaceRandomTiles(
+        TileType type, 
+        int count, 
+        System.Random rand,
+        CancellationToken token,
+        Action<string> onLog
+        )
     {
         int placed = 0;
         while (placed < count)
@@ -56,9 +78,14 @@ public class MapManager : MonoBehaviour
             {
                 map[x, y].Type = type;
                 placed++;
+                if (placed % 100 == 0) // loguj co 100 elementów, ?eby nie spamowa?
+                {
+                    onLog?.Invoke($"Umieszczono {placed}/{count} {type}");
+                }
                 await Task.Yield();
             }
         }
+        onLog?.Invoke($"{type} rozmieszczone: {placed}/{count}");
     }
 
     public void RenderMap()
@@ -91,22 +118,13 @@ public class MapManager : MonoBehaviour
         cts?.Cancel();
     }
 
-    public void StartGeneration(UIManager ui)
+    public void StartGeneration(
+        UIManager ui,
+        float obstaclePercent,
+        float resourcePercent
+        )
     {
         cts = new CancellationTokenSource();
-        _ = GenerateMapAsync(width, height, ui.UpdateProgress, ui.LogMessage, cts.Token);
+        _ = GenerateMapAsync(width, height, obstaclePercent, resourcePercent, ui.UpdateProgress, ui.LogMessage, cts.Token);
     }
-    /*
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    */
 }
