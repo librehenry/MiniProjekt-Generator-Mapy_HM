@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -46,16 +46,16 @@ public class MapManager : MonoBehaviour
         int obstacleCount = Mathf.RoundToInt(totalTiles * obstaclePercent); //(int)(width * height * 0.1f);
         int resourceCount = Mathf.RoundToInt(totalTiles * resourcePercent); //(int)(width * height * 0.02f);
 
-        onLog?.Invoke("Generuj? przeszkody...");
+        onLog?.Invoke("Generuję przeszkody...");
         await PlaceRandomTiles(TileType.Obstacle, obstacleCount, rand, token, onLog);
 
-        onLog?.Invoke("Generuj? zasoby...");
+        onLog?.Invoke("Generuję zasoby...");
         await PlaceRandomTiles(TileType.Resource, resourceCount, rand, token, onLog);
 
-        onLog?.Invoke("Renderuj? map?...");
+        onLog?.Invoke("Renderuję mapę...");
         RenderMap();
 
-        onLog?.Invoke("Generowanie zako?czone.");
+        onLog?.Invoke("Generowanie zakończone.");
     }
 
     private async Task PlaceRandomTiles(
@@ -78,7 +78,7 @@ public class MapManager : MonoBehaviour
             {
                 map[x, y].Type = type;
                 placed++;
-                if (placed % 100 == 0) // loguj co 100 element�w, ?eby nie spamowa?
+                if (placed % 100 == 0) // loguj co 100 elementów, żeby nie spamować
                 {
                     onLog?.Invoke($"Umieszczono {placed}/{count} {type}");
                 }

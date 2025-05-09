@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +15,8 @@ public class UIManager : MonoBehaviour
     public Slider resourceSlider;
     public TextMeshProUGUI resourceLabel;
 
+    private bool _isAdjusting = false;
+
 
     public MapManager mapManager;
 
@@ -23,10 +25,10 @@ public class UIManager : MonoBehaviour
         generateButton.onClick.AddListener(OnGenerateClicked);
         cancelButton.onClick.AddListener(OnCancelClicked);
 
-        obstacleSlider.onValueChanged.AddListener(value => obstacleLabel.text = $"Przeszkody: {value:F0}%");
-        resourceSlider.onValueChanged.AddListener(value => resourceLabel.text = $"Zasoby: {value:F0}%");
+        obstacleSlider.onValueChanged.AddListener(OnObstacleSliderChanged);
+        resourceSlider.onValueChanged.AddListener(OnResourceSliderChanged);
 
-        // Ustaw domy?lne etykiety
+        // Ustaw domyślne etykiety
         obstacleLabel.text = $"Przeszkody: {obstacleSlider.value:F0}%";
         resourceLabel.text = $"Zasoby: {resourceSlider.value:F0}%";
     }
@@ -38,7 +40,7 @@ public class UIManager : MonoBehaviour
         
         if (width <= 0 || height <= 0)
         {
-            LogMessage("Nieprawid?owe wymiary mapy.");
+            LogMessage("Nieprawidłowe wymiary mapy.");
             return;
         }
 
@@ -68,4 +70,41 @@ public class UIManager : MonoBehaviour
     {
         logText.text += msg + "\n";
     }
+
+    private void OnObstacleSliderChanged(float value)
+    {
+        if (_isAdjusting) return;
+        _isAdjusting = true;
+
+        float total = value + resourceSlider.value;
+        if (total > 100)
+        {
+            resourceSlider.value = 100 - value;
+        }
+
+        UpdateLabels();
+        _isAdjusting = false;
+    }
+
+    private void OnResourceSliderChanged(float value)
+    {
+        if (_isAdjusting) return;
+        _isAdjusting = true;
+
+        float total = value + obstacleSlider.value;
+        if (total > 100)
+        {
+            obstacleSlider.value = 100 - value;
+        }
+
+        UpdateLabels();
+        _isAdjusting = false;
+    }
+
+    private void UpdateLabels()
+    {
+        obstacleLabel.text = $"{(int)obstacleSlider.value}%";
+        resourceLabel.text = $"{(int)resourceSlider.value}%";
+    }
+
 }
