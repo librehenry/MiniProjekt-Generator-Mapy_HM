@@ -13,6 +13,7 @@ public class MapManager : MonoBehaviour
 
     private MapTile[,] map;
     private CancellationTokenSource cts;
+    public UIManager uiManager; // Referencja do UIManagera
 
     public async Task GenerateMapAsync(
         int width, 
@@ -24,6 +25,7 @@ public class MapManager : MonoBehaviour
         CancellationToken token
         )
     {
+        Debug.Log("Przypisany UIManager: " + uiManager.name);
         map = new MapTile[width, height];
 
         for (int y = 0; y < height; y++)
@@ -54,6 +56,14 @@ public class MapManager : MonoBehaviour
 
         onLog?.Invoke("Renderuję mapę...");
         RenderMap();
+
+        
+        if (uiManager != null)
+        {
+            Texture2D tex = GenerateTexture();
+            uiManager.ShowMapTexture(tex);
+        }
+        
 
         onLog?.Invoke("Generowanie zakończone.");
     }
@@ -90,6 +100,7 @@ public class MapManager : MonoBehaviour
 
     public void RenderMap()
     {
+        Debug.Log("RenderMap start");
         foreach (Transform child in tileParent)
         {
             Destroy(child.gameObject);
@@ -103,14 +114,20 @@ public class MapManager : MonoBehaviour
                 tile.transform.localPosition = new Vector3(x, -y, 0);
 
                 SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+                if (sr == null)
+                {
+                    Debug.LogError("Tile prefab nie ma SpriteRenderera!");
+                    continue;
+                }
                 switch (map[x, y].Type)
                 {
-                    case TileType.Obstacle: sr.color = Color.gray; break;
-                    case TileType.Resource: sr.color = Color.green; break;
-                    case TileType.Empty: sr.color = Color.black; break;
+                    case TileType.Obstacle: sr.color = new Color(0.5f, 0.5f, 0.5f); break;
+                    case TileType.Resource: sr.color = new Color(0f, 1f, 0f); break;
+                    case TileType.Empty: sr.color = new Color(0f, 0f, 0f); break;
                 }
             }
         }
+        Debug.Log("RenderMap done");
     }
 
     public void CancelGeneration()
@@ -127,4 +144,27 @@ public class MapManager : MonoBehaviour
         cts = new CancellationTokenSource();
         _ = GenerateMapAsync(width, height, obstaclePercent, resourcePercent, ui.UpdateProgress, ui.LogMessage, cts.Token);
     }
+
+    public Texture2D GenerateTexture()
+    {
+        Texture2D texture = new Texture2D(width, height);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Color color = map[x, y].Type switch
+                {
+                    TileType.Obstacle => Color.gray,
+                    TileType.Resource => Color.green,
+                    TileType.Empty => Color.black,
+                    _ => Color.magenta // Błąd
+                };
+                texture.SetPixel(x, y, color);
+            }
+        }
+
+        texture.Apply();
+        return texture;
+    }
+
 }

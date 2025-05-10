@@ -14,6 +14,8 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI obstacleLabel;
     public Slider resourceSlider;
     public TextMeshProUGUI resourceLabel;
+    public RawImage mapPreview;
+
 
     private bool _isAdjusting = false;
 
@@ -35,6 +37,7 @@ public class UIManager : MonoBehaviour
 
     private void OnGenerateClicked()
     {
+        Debug.Log("Kliknięto przycisk Generuj.");
         int.TryParse(widthInput.text, out int width);
         int.TryParse(heightInput.text, out int height);
         
@@ -58,6 +61,7 @@ public class UIManager : MonoBehaviour
 
     private void OnCancelClicked()
     {
+        Debug.Log("Kliknięto przycisk Anuluj.");
         mapManager.CancelGeneration();
     }
 
@@ -68,7 +72,10 @@ public class UIManager : MonoBehaviour
 
     public void LogMessage(string msg)
     {
-        logText.text += msg + "\n";
+        //logText.text += msg + "\n";
+        logText.text = msg;
+        Debug.Log(msg);
+
     }
 
     private void OnObstacleSliderChanged(float value)
@@ -103,8 +110,17 @@ public class UIManager : MonoBehaviour
 
     private void UpdateLabels()
     {
-        obstacleLabel.text = $"{(int)obstacleSlider.value}%";
-        resourceLabel.text = $"{(int)resourceSlider.value}%";
+        obstacleLabel.text = $"Przeszkody: {(int)obstacleSlider.value}%";
+        resourceLabel.text = $"Zasoby: {(int)resourceSlider.value}%";
     }
+
+    public void ShowMapTexture(Texture2D texture)
+    {
+        if (texture == null) return;
+
+        mapPreview.texture = texture;
+        mapPreview.rectTransform.sizeDelta = new Vector2(texture.width, texture.height);
+    }
+
 
 }
