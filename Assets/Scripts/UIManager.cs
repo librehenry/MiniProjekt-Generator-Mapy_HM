@@ -1,4 +1,5 @@
 ﻿using TMPro;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,8 @@ public class UIManager : MonoBehaviour
     public Slider resourceSlider;
     public TextMeshProUGUI resourceLabel;
     public RawImage mapPreview;
+    public Button savelButton;
+
 
 
     private bool _isAdjusting = false;
@@ -26,6 +29,7 @@ public class UIManager : MonoBehaviour
     {
         generateButton.onClick.AddListener(OnGenerateClicked);
         cancelButton.onClick.AddListener(OnCancelClicked);
+        savelButton.onClick.AddListener(SaveCurrentMapImage);
 
         obstacleSlider.onValueChanged.AddListener(OnObstacleSliderChanged);
         resourceSlider.onValueChanged.AddListener(OnResourceSliderChanged);
@@ -122,6 +126,22 @@ public class UIManager : MonoBehaviour
         mapPreview.texture = texture;
         mapPreview.rectTransform.sizeDelta = new Vector2(texture.width, texture.height);
     }
+
+    public void SaveCurrentMapImage()
+    {
+        if (mapPreview.texture is Texture2D tex)
+        {
+            byte[] bytes = tex.EncodeToPNG();
+            string path = System.IO.Path.Combine(Application.dataPath, "SavedMap.png");
+            File.WriteAllBytes(path, bytes);
+            LogMessage($"Mapa zapisana do: {path}");
+        }
+        else
+        {
+            LogMessage("Brak tekstury do zapisania.");
+        }
+    }
+
 
 
 }
