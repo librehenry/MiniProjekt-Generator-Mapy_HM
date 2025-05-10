@@ -167,4 +167,11 @@ public class MapManager : MonoBehaviour
         return texture;
     }
 
+    public void SaveTextureAsPNG(Texture2D texture, string path)
+    {
+        byte[] bytes = texture.EncodeToPNG();
+        System.IO.File.WriteAllBytes(path, bytes);
+        Debug.Log($"Mapa zapisana jako {path}");
+    }
+
 }
