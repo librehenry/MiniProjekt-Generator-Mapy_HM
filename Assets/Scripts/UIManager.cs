@@ -56,7 +56,8 @@ public class UIManager : MonoBehaviour
         progressBar.value = 0;
         logText.text = "";
 
-        mapManager.StartGeneration(this, obstaclePercent, resourcePercent);
+        mapManager.StartGeneration(UpdateProgress, LogMessage, obstaclePercent, resourcePercent,
+            () => ShowMapTexture(mapManager.CurrentTexture));
     }
 
     private void OnCancelClicked()
